@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Customer Portal – MNSN NBFC</title>
+<link rel="stylesheet" href="../../css/dashboard.css">
+<style>
+:root { --sidebar-w: 240px; }
+.tab-bar { display:flex; border-bottom:2px solid rgba(0,0,0,0.07); margin-bottom:24px; gap:4px; }
+.tab-btn { padding:10px 18px; border:none; background:none; font-family:'DM Sans',sans-serif; font-size:14px; font-weight:500; color:var(--text-muted); cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-2px; transition:all .2s; }
+.tab-btn.active { color:var(--gold); border-bottom-color:var(--gold); }
+.loan-card { background:var(--white); border-radius:var(--radius); padding:20px; border:1px solid rgba(0,0,0,0.06); box-shadow:var(--shadow); margin-bottom:14px; display:flex; justify-content:space-between; align-items:center; }
+.loan-card .loan-info h4 { font-size:15px; color:var(--navy); margin-bottom:4px; }
+.loan-card .loan-info p { font-size:13px; color:var(--text-muted); }
+.loan-card .loan-meta { text-align:right; }
+.loan-card .loan-meta .amount { font-family:'Playfair Display',serif; font-size:20px; color:var(--navy); }
+.progress-bar { height:6px; background:rgba(0,0,0,0.07); border-radius:3px; margin-top:8px; }
+.progress-fill { height:100%; border-radius:3px; background:var(--gold); transition:width 1s ease; }
+.step-flow { display:flex; gap:0; margin:24px 0; }
+.step-item { flex:1; text-align:center; position:relative; }
+.step-item::after { content:''; position:absolute; top:15px; left:50%; width:100%; height:2px; background:rgba(0,0,0,0.1); z-index:0; }
+.step-item:last-child::after { display:none; }
+.step-num { width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:600; margin:0 auto 6px; position:relative; z-index:1; }
+.step-done .step-num { background:var(--success); color:#fff; }
+.step-active .step-num { background:var(--gold); color:var(--navy); }
+.step-pending .step-num { background:rgba(0,0,0,0.08); color:var(--text-muted); }
+.step-label { font-size:11px; color:var(--text-muted); }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-brand">
+    <div class="logo">
+      <div class="logo-mark">M</div>
+      <div class="logo-text">MNSN<span>NBFC</span></div>
+    </div>
+  </div>
+  <div class="sidebar-user">
+    <div class="user-avatar" id="avatarInitial">CU</div>
+    <div class="user-info">
+      <div class="name" id="custNameDisplay">Customer</div>
+      <div class="role">Customer Account</div>
+    </div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section">
+      <div class="nav-section-label">My Account</div>
+      <div class="nav-item active" onclick="showSection('home')"><span class="nav-icon">🏠</span>Overview</div>
+      <div class="nav-item" onclick="showSection('apply')"><span class="nav-icon">📝</span>Apply for Loan</div>
+      <div class="nav-item" onclick="showSection('status')"><span class="nav-icon">🔍</span>Application Status</div>
+      <div class="nav-item" onclick="showSection('emi')"><span class="nav-icon">🧮</span>EMI Calculator</div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-section-label">Banking</div>
+      <div class="nav-item" onclick="showSection('account')"><span class="nav-icon">🏦</span>My Account</div>
+      <div class="nav-item" onclick="showSection('deposit')"><span class="nav-icon">💰</span>Deposit / FD</div>
+    </div>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="nav-item" onclick="logout()"><span class="nav-icon">🚪</span>Logout</div>
+  </div>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <div class="topbar-title">
+      <h2 id="pageTitle">My Dashboard</h2>
+      <p id="pageDate"></p>
+    </div>
+    <div class="topbar-actions">
+      <button class="btn btn-primary btn-sm" onclick="showSection('apply')">+ Apply for Loan</button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- HOME OVERVIEW -->
+    <div id="sec-home">
+      <div class="stats-row">
+        <div class="stat-card"><div class="icon icon-gold">💳</div><div><div class="value">₹2,85,000</div><div class="label">Active Loan Balance</div><div class="change up">1 Active Loan</div></div></div>
+        <div class="stat-card"><div class="icon icon-green">📅</div><div><div class="value">₹12,450</div><div class="label">Next EMI Due</div><div class="change" style="color:var(--warning);">Due: 5 Apr 2025</div></div></div>
+        <div class="stat-card"><div class="icon icon-blue">🏦</div><div><div class="value">₹1,50,000</div><div class="label">Savings Balance</div><div class="change up">₹500 interest this month</div></div></div>
+        <div class="stat-card"><div class="icon icon-gold">📈</div><div><div class="value">₹75,000</div><div class="label">Fixed Deposit</div><div class="change up">Matures: Jun 2025</div></div></div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1.5fr 1fr;gap:18px;margin-bottom:24px;">
+        <div class="table-card">
+          <h3>My Active Loans</h3>
+          <div class="loan-card" style="margin-top:14px;">
+            <div class="loan-info">
+              <h4>Personal Loan #LN2025001</h4>
+              <p>Applied: 15 Jan 2025 · 36 month tenure</p>
+              <div style="margin-top:10px;font-size:12px;color:var(--text-muted);">Repayment Progress</div>
+              <div class="progress-bar"><div class="progress-fill" style="width:18%;"></div></div>
+              <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">6 of 36 EMIs paid</div>
+            </div>
+            <div class="loan-meta">
+              <div class="amount">₹3,50,000</div>
+              <div style="font-size:12px;color:var(--text-muted);margin-top:4px;">Original</div>
+              <div style="font-size:14px;font-weight:600;color:var(--navy);margin-top:6px;">₹2,85,000</div>
+              <div style="font-size:11px;color:var(--text-muted);">Outstanding</div>
+              <span class="badge badge-success" style="margin-top:8px;">Active</span>
+            </div>
+          </div>
+        </div>
+        <div class="form-card">
+          <h3>Credit Score</h3>
+          <div style="text-align:center;padding:16px 0;">
+            <div style="width:120px;height:120px;border-radius:50%;background:conic-gradient(#c9a84c 0deg,#c9a84c 267deg,rgba(0,0,0,0.07) 267deg);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;position:relative;">
+              <div style="width:92px;height:92px;background:var(--white);border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+                <div style="font-family:'Playfair Display',serif;font-size:28px;font-weight:700;color:var(--navy);line-height:1;">742</div>
+                <div style="font-size:10px;color:var(--text-muted);">Good</div>
+              </div>
+            </div>
+            <div style="font-size:13px;color:var(--text-muted);">Your credit score is <strong style="color:var(--success);">Good</strong>. You're likely eligible for most loan products.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="table-card">
+        <h3>Recent Transactions</h3>
+        <table class="data-table" style="margin-top:8px;">
+          <thead><tr><th>Date</th><th>Description</th><th>Type</th><th>Amount</th><th>Balance</th></tr></thead>
+          <tbody>
+            <tr><td>20 Mar 2025</td><td>EMI Payment – LN2025001</td><td><span class="badge badge-danger">Debit</span></td><td style="color:var(--danger);">-₹12,450</td><td>₹1,50,000</td></tr>
+            <tr><td>15 Mar 2025</td><td>Salary Credit</td><td><span class="badge badge-success">Credit</span></td><td style="color:var(--success);">+₹55,000</td><td>₹1,62,450</td></tr>
+            <tr><td>10 Mar 2025</td><td>FD Interest Credited</td><td><span class="badge badge-success">Credit</span></td><td style="color:var(--success);">+₹596</td><td>₹1,07,450</td></tr>
+            <tr><td>05 Mar 2025</td><td>Utility Bill Payment</td><td><span class="badge badge-danger">Debit</span></td><td style="color:var(--danger);">-₹2,340</td><td>₹1,06,854</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- APPLY FOR LOAN -->
+    <div id="sec-apply" style="display:none;">
+      <div class="form-card" style="max-width:760px;">
+        <h3>Apply for a Loan</h3>
+        <div style="margin-bottom:24px;">
+          <div class="step-flow">
+            <div class="step-item step-active" id="step1"><div class="step-num">1</div><div class="step-label">Loan Details</div></div>
+            <div class="step-item step-pending" id="step2"><div class="step-num">2</div><div class="step-label">Personal Info</div></div>
+            <div class="step-item step-pending" id="step3"><div class="step-num">3</div><div class="step-label">Documents</div></div>
+            <div class="step-item step-pending" id="step4"><div class="step-num">4</div><div class="step-label">Submit</div></div>
+          </div>
+        </div>
+
+        <div id="applyStep1">
+          <div class="form-row">
+            <div class="form-group"><label>Loan Type</label>
+              <select class="form-control" id="loanType">
+                <option>Personal Loan</option><option>Home Loan</option><option>Business Loan</option><option>Education Loan</option>
+              </select>
+            </div>
+            <div class="form-group"><label>Loan Amount (₹)</label><input class="form-control" type="number" id="applyLoanAmt" placeholder="e.g. 300000" oninput="updateLoanPreview()"></div>
+            <div class="form-group"><label>Tenure (Years)</label>
+              <select class="form-control" id="applyTenure" onchange="updateLoanPreview()">
+                <option>1</option><option>2</option><option selected>3</option><option>5</option><option>7</option><option>10</option><option>15</option><option>20</option>
+              </select>
+            </div>
+            <div class="form-group"><label>Purpose</label><input class="form-control" type="text" placeholder="e.g. Home renovation, Medical"></div>
+          </div>
+          <div id="loanPreview" style="display:none;background:#f8f5ef;border-radius:10px;padding:16px;margin-bottom:16px;">
+            <div style="font-size:13px;color:var(--text-muted);margin-bottom:8px;">Estimated Monthly EMI</div>
+            <div style="font-family:'Playfair Display',serif;font-size:32px;color:var(--navy);" id="previewEMI">—</div>
+            <div style="font-size:12px;color:var(--text-muted);margin-top:4px;">at 12% p.a. · indicative only</div>
+          </div>
+          <button class="btn btn-primary" onclick="nextStep(2)">Continue →</button>
+        </div>
+
+        <div id="applyStep2" style="display:none;">
+          <div class="form-row">
+            <div class="form-group"><label>Full Name</label><input class="form-control" type="text" placeholder="As per Aadhaar"></div>
+            <div class="form-group"><label>Date of Birth</label><input class="form-control" type="date"></div>
+            <div class="form-group"><label>PAN Number</label><input class="form-control" type="text" placeholder="ABCDE1234F" maxlength="10"></div>
+            <div class="form-group"><label>Aadhaar Number</label><input class="form-control" type="text" placeholder="XXXX XXXX XXXX" maxlength="14"></div>
+            <div class="form-group"><label>Employment Type</label>
+              <select class="form-control"><option>Salaried</option><option>Self Employed</option><option>Business Owner</option></select>
+            </div>
+            <div class="form-group"><label>Monthly Income (₹)</label><input class="form-control" type="number" placeholder="Net take-home salary"></div>
+          </div>
+          <button class="btn btn-secondary" onclick="prevStep(1)" style="margin-right:8px;">← Back</button>
+          <button class="btn btn-primary" onclick="nextStep(3)">Continue →</button>
+        </div>
+
+        <div id="applyStep3" style="display:none;">
+          <p style="color:var(--text-muted);font-size:14px;margin-bottom:20px;">Upload the following documents in PDF or JPG format (max 5MB each)</p>
+          <div class="form-group"><label>Aadhaar Card (Front & Back)</label><input class="form-control" type="file" accept=".pdf,.jpg,.jpeg,.png"></div>
+          <div class="form-group"><label>PAN Card</label><input class="form-control" type="file" accept=".pdf,.jpg,.jpeg,.png"></div>
+          <div class="form-group"><label>Salary Slips (Last 3 months)</label><input class="form-control" type="file" accept=".pdf,.jpg,.jpeg,.png" multiple></div>
+          <div class="form-group"><label>Bank Statement (Last 6 months)</label><input class="form-control" type="file" accept=".pdf"></div>
+          <button class="btn btn-secondary" onclick="prevStep(2)" style="margin-right:8px;">← Back</button>
+          <button class="btn btn-primary" onclick="nextStep(4)">Continue →</button>
+        </div>
+
+        <div id="applyStep4" style="display:none;text-align:center;padding:20px 0;">
+          <div style="font-size:48px;margin-bottom:12px;">✅</div>
+          <h3 style="font-size:22px;color:var(--navy);margin-bottom:8px;">Application Submitted!</h3>
+          <p style="color:var(--text-muted);font-size:14px;max-width:400px;margin:0 auto 24px;">Your loan application has been received. Application ID: <strong style="color:var(--navy);">#LN2025089</strong>. We'll review it within 2–3 business days.</p>
+          <button class="btn btn-primary" onclick="showSection('status')">Track Application</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- APPLICATION STATUS -->
+    <div id="sec-status" style="display:none;">
+      <div class="form-card" style="max-width:700px;">
+        <h3>Track Your Application</h3>
+        <div style="display:flex;gap:10px;margin-bottom:20px;">
+          <input class="form-control" type="text" id="trackId" placeholder="Enter Application ID (e.g. LN2025001)" style="flex:1;">
+          <button class="btn btn-primary" onclick="trackApp()">Track</button>
+        </div>
+      </div>
+      <div id="trackResult" style="max-width:700px;display:none;">
+        <div class="form-card">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;">
+            <div>
+              <h3 style="font-size:18px;">Application #LN2025001</h3>
+              <div style="font-size:13px;color:var(--text-muted);margin-top:4px;">Personal Loan · Applied 15 Jan 2025</div>
+            </div>
+            <span class="badge badge-warning" style="font-size:13px;padding:6px 14px;">Under Review</span>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:24px;">
+            <div style="background:#f8f5ef;border-radius:8px;padding:14px;"><div style="font-size:11px;color:var(--text-muted);">Loan Amount</div><div style="font-size:18px;font-weight:600;color:var(--navy);margin-top:4px;">₹3,50,000</div></div>
+            <div style="background:#f8f5ef;border-radius:8px;padding:14px;"><div style="font-size:11px;color:var(--text-muted);">Tenure</div><div style="font-size:18px;font-weight:600;color:var(--navy);margin-top:4px;">36 months</div></div>
+            <div style="background:#f8f5ef;border-radius:8px;padding:14px;"><div style="font-size:11px;color:var(--text-muted);">Interest Rate</div><div style="font-size:18px;font-weight:600;color:var(--navy);margin-top:4px;">12% p.a.</div></div>
+          </div>
+          <div style="font-size:14px;font-weight:600;color:var(--navy);margin-bottom:14px;">Application Progress</div>
+          <div style="display:flex;flex-direction:column;gap:12px;">
+            <div style="display:flex;gap:14px;align-items:center;"><div style="width:28px;height:28px;border-radius:50%;background:var(--success);display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;flex-shrink:0;">✓</div><div><div style="font-size:14px;font-weight:500;">Application Submitted</div><div style="font-size:12px;color:var(--text-muted);">15 Jan 2025, 10:32 AM</div></div></div>
+            <div style="display:flex;gap:14px;align-items:center;"><div style="width:28px;height:28px;border-radius:50%;background:var(--success);display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;flex-shrink:0;">✓</div><div><div style="font-size:14px;font-weight:500;">Documents Verified</div><div style="font-size:12px;color:var(--text-muted);">17 Jan 2025</div></div></div>
+            <div style="display:flex;gap:14px;align-items:center;"><div style="width:28px;height:28px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;color:var(--navy);font-size:12px;font-weight:700;flex-shrink:0;">⟳</div><div><div style="font-size:14px;font-weight:500;">Credit Assessment</div><div style="font-size:12px;color:var(--warning);">In Progress</div></div></div>
+            <div style="display:flex;gap:14px;align-items:center;opacity:0.4;"><div style="width:28px;height:28px;border-radius:50%;background:rgba(0,0,0,0.1);display:flex;align-items:center;justify-content:center;color:var(--text-muted);font-size:12px;flex-shrink:0;">4</div><div><div style="font-size:14px;font-weight:500;">Loan Approval</div><div style="font-size:12px;color:var(--text-muted);">Awaiting</div></div></div>
+            <div style="display:flex;gap:14px;align-items:center;opacity:0.4;"><div style="width:28px;height:28px;border-radius:50%;background:rgba(0,0,0,0.1);display:flex;align-items:center;justify-content:center;color:var(--text-muted);font-size:12px;flex-shrink:0;">5</div><div><div style="font-size:14px;font-weight:500;">Disbursement</div><div style="font-size:12px;color:var(--text-muted);">Pending approval</div></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- EMI CALCULATOR -->
+    <div id="sec-emi" style="display:none;">
+      <div class="form-card" style="max-width:680px;">
+        <h3>EMI Calculator</h3>
+        <div class="form-group">
+          <label>Loan Amount: <strong id="cLoanDisplay">₹3,00,000</strong></label>
+          <div class="range-wrap">
+            <input type="range" id="cLoanAmt" min="50000" max="5000000" step="50000" value="300000" oninput="custCalcEMI()">
+            <div class="range-labels"><span>₹50K</span><span>₹50L</span></div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Interest Rate: <strong id="cRateDisplay">12%</strong> p.a.</label>
+          <div class="range-wrap">
+            <input type="range" id="cRate" min="6" max="24" step="0.5" value="12" oninput="custCalcEMI()">
+            <div class="range-labels"><span>6%</span><span>24%</span></div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Tenure: <strong id="cTenureDisplay">3 years</strong></label>
+          <div class="range-wrap">
+            <input type="range" id="cTenure" min="1" max="30" step="1" value="3" oninput="custCalcEMI()">
+            <div class="range-labels"><span>1 yr</span><span>30 yrs</span></div>
+          </div>
+        </div>
+        <div class="calc-result">
+          <div class="emi-label">Monthly EMI</div>
+          <div class="emi-amount" id="cEmiAmt">₹0</div>
+          <div class="calc-breakdown">
+            <div class="item"><div class="val" id="cPrincipal"></div><div class="lbl">Principal</div></div>
+            <div class="item"><div class="val" id="cInterest"></div><div class="lbl">Total Interest</div></div>
+            <div class="item"><div class="val" id="cTotal"></div><div class="lbl">Total Payable</div></div>
+          </div>
+        </div>
+        <button class="btn btn-primary" style="margin-top:16px;" onclick="showSection('apply')">Apply for This Loan</button>
+      </div>
+    </div>
+
+    <!-- ACCOUNT -->
+    <div id="sec-account" style="display:none;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;">
+        <div class="form-card">
+          <h3>Savings Account</h3>
+          <div style="background:linear-gradient(135deg,var(--navy),var(--navy-mid));border-radius:12px;padding:24px;color:#fff;margin-bottom:16px;position:relative;overflow:hidden;">
+            <div style="position:absolute;top:-20px;right:-20px;width:100px;height:100px;border-radius:50%;background:rgba(201,168,76,0.1);"></div>
+            <div style="font-size:12px;color:rgba(255,255,255,0.5);margin-bottom:4px;">Account Number</div>
+            <div style="font-size:16px;color:#fff;letter-spacing:2px;">MNSN XXXX XXXX 4821</div>
+            <div style="margin-top:20px;font-size:12px;color:rgba(255,255,255,0.5);">Current Balance</div>
+            <div style="font-family:'Playfair Display',serif;font-size:32px;color:var(--gold);">₹1,50,000</div>
+            <div style="margin-top:12px;font-size:12px;color:rgba(255,255,255,0.5);">Interest Rate: 4.5% p.a.</div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+            <button class="btn btn-primary" onclick="showToast('Opening deposit form...','success-t')">Deposit Money</button>
+            <button class="btn btn-secondary" onclick="showToast('Opening withdraw form...')">Withdraw</button>
+          </div>
+        </div>
+        <div class="form-card">
+          <h3>Create New Account</h3>
+          <p style="color:var(--text-muted);font-size:14px;margin-bottom:18px;">Open a savings or current account with MNSN NBFC</p>
+          <div class="form-group"><label>Account Type</label>
+            <select class="form-control"><option>Savings Account</option><option>Current Account</option></select>
+          </div>
+          <div class="form-group"><label>Initial Deposit (₹)</label><input class="form-control" type="number" placeholder="Minimum ₹1,000"></div>
+          <div class="form-group"><label>Nominee Name</label><input class="form-control" type="text" placeholder="Full name"></div>
+          <button class="btn btn-primary" onclick="showToast('Account opening request submitted!','success-t')">Open Account</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- DEPOSITS -->
+    <div id="sec-deposit" style="display:none;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px;">
+        <div class="form-card">
+          <h3>Open Fixed Deposit</h3>
+          <div class="form-group"><label>Deposit Amount (₹)</label><input class="form-control" type="number" id="fdAmt" placeholder="Minimum ₹10,000" oninput="calcFD()"></div>
+          <div class="form-group"><label>Tenure</label>
+            <select class="form-control" id="fdTenure" onchange="calcFD()">
+              <option value="1">1 Year – 8.75% p.a.</option>
+              <option value="2">2 Years – 9.0% p.a.</option>
+              <option value="3" selected>3 Years – 9.25% p.a.</option>
+              <option value="5">5 Years – 9.5% p.a.</option>
+            </select>
+          </div>
+          <div id="fdResult" style="background:#f8f5ef;border-radius:10px;padding:16px;margin-bottom:16px;display:none;">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+              <div><div style="font-size:11px;color:var(--text-muted);">Maturity Amount</div><div style="font-size:20px;font-weight:600;color:var(--navy);" id="fdMaturity">—</div></div>
+              <div><div style="font-size:11px;color:var(--text-muted);">Interest Earned</div><div style="font-size:20px;font-weight:600;color:var(--success);" id="fdInterest">—</div></div>
+            </div>
+          </div>
+          <button class="btn btn-primary" onclick="bookFD()">Book Fixed Deposit</button>
+        </div>
+        <div class="form-card">
+          <h3>My Fixed Deposits</h3>
+          <div class="loan-card">
+            <div class="loan-info">
+              <h4>FD-20250215</h4>
+              <p>Started: 15 Feb 2025 · 1 year tenure</p>
+              <div class="progress-bar" style="margin-top:8px;"><div class="progress-fill" style="width:28%;"></div></div>
+              <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">Matures: 15 Jun 2025</div>
+            </div>
+            <div class="loan-meta">
+              <div class="amount">₹75,000</div>
+              <div style="font-size:12px;color:var(--success);margin-top:4px;">8.75% p.a.</div>
+              <span class="badge badge-success" style="margin-top:8px;">Active</span>
+            </div>
+          </div>
+          <div style="margin-top:8px;">
+            <div style="font-size:13px;color:var(--text-muted);">Savings Account Deposit</div>
+            <div style="display:flex;gap:10px;margin-top:10px;">
+              <input class="form-control" type="number" placeholder="Amount (₹)" style="flex:1;">
+              <button class="btn btn-primary" onclick="showToast('Deposit successful!','success-t')">Deposit</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+document.getElementById('pageDate').textContent = new Date().toLocaleDateString('en-IN',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+const name = sessionStorage.getItem('custName') || 'Customer';
+document.getElementById('custNameDisplay').textContent = name.charAt(0).toUpperCase() + name.slice(1);
+document.getElementById('avatarInitial').textContent = name.substring(0,2).toUpperCase();
+
+const sections = ['home','apply','status','emi','account','deposit'];
+function showSection(name) {
+  sections.forEach(s => document.getElementById('sec-'+s).style.display='none');
+  document.getElementById('sec-'+name).style.display='';
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const titles = {home:'My Dashboard',apply:'Apply for Loan',status:'Application Status',emi:'EMI Calculator',account:'My Account',deposit:'Deposits & FD'};
+  document.getElementById('pageTitle').textContent = titles[name];
+  if(name==='emi') custCalcEMI();
+  event && event.currentTarget && event.currentTarget.classList.add('active');
+}
+
+// Apply steps
+function nextStep(n) {
+  for(let i=1;i<=4;i++) { document.getElementById('applyStep'+i).style.display='none'; }
+  document.getElementById('applyStep'+n).style.display='';
+  for(let i=1;i<=4;i++) {
+    const el=document.getElementById('step'+i);
+    el.className='step-item '+(i<n?'step-done':i===n?'step-active':'step-pending');
+  }
+}
+function prevStep(n) { nextStep(n); }
+
+function updateLoanPreview() {
+  const amt = +document.getElementById('applyLoanAmt').value;
+  const yr = +document.getElementById('applyTenure').value;
+  if(!amt) return;
+  const r = 12/12/100, n = yr*12;
+  const emi = amt * r * Math.pow(1+r,n) / (Math.pow(1+r,n)-1);
+  document.getElementById('previewEMI').textContent = '₹' + Math.round(emi).toLocaleString('en-IN') + '/month';
+  document.getElementById('loanPreview').style.display='';
+}
+
+function trackApp() {
+  const id = document.getElementById('trackId').value.trim();
+  if(!id) { showToast('Please enter an Application ID','error-t'); return; }
+  document.getElementById('trackResult').style.display='';
+  showToast('Application found!','success-t');
+}
+
+function custCalcEMI() {
+  const P = +document.getElementById('cLoanAmt').value;
+  const r = +document.getElementById('cRate').value / 12 / 100;
+  const n = +document.getElementById('cTenure').value * 12;
+  const emi = P * r * Math.pow(1+r,n) / (Math.pow(1+r,n)-1);
+  const total = emi*n, interest = total-P;
+  const fmt = v => '₹'+Math.round(v).toLocaleString('en-IN');
+  document.getElementById('cLoanDisplay').textContent = fmt(P);
+  document.getElementById('cRateDisplay').textContent = document.getElementById('cRate').value+'%';
+  document.getElementById('cTenureDisplay').textContent = document.getElementById('cTenure').value+' years';
+  document.getElementById('cEmiAmt').textContent = fmt(emi);
+  document.getElementById('cPrincipal').textContent = fmt(P);
+  document.getElementById('cInterest').textContent = fmt(interest);
+  document.getElementById('cTotal').textContent = fmt(total);
+}
+
+function calcFD() {
+  const amt = +document.getElementById('fdAmt').value;
+  if(!amt) return;
+  const tenureEl = document.getElementById('fdTenure');
+  const tenure = +tenureEl.value;
+  const rates = {1:8.75, 2:9.0, 3:9.25, 5:9.5};
+  const rate = rates[tenure]/100;
+  const maturity = amt * Math.pow(1+rate, tenure);
+  const interest = maturity - amt;
+  document.getElementById('fdMaturity').textContent = '₹' + Math.round(maturity).toLocaleString('en-IN');
+  document.getElementById('fdInterest').textContent = '₹' + Math.round(interest).toLocaleString('en-IN');
+  document.getElementById('fdResult').style.display='';
+}
+
+function bookFD() {
+  const amt = document.getElementById('fdAmt').value;
+  if(!amt || amt < 10000) { showToast('Minimum FD amount is ₹10,000','error-t'); return; }
+  showToast('Fixed Deposit booked successfully! Check your registered email for details.','success-t');
+}
+
+function logout() {
+  if(confirm('Logout from your account?')) {
+    sessionStorage.clear();
+    window.location.href='../../index.html';
+  }
+}
+function showToast(msg, type='') {
+  const t=document.getElementById('toast');
+  t.textContent=msg;
+  t.className='toast show '+type;
+  setTimeout(()=>t.classList.remove('show'),3500);
+}
+
+custCalcEMI();
+</script>
+</body>
+</html>
